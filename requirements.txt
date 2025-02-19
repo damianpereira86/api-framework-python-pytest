@@ -3,3 +3,4 @@ requests
 python-dotenv
 flake8
 black
+pydantic>=2.0.0
