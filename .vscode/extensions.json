@@ -1,0 +1,11 @@
+{
+    "recommendations": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.black-formatter",
+        "ms-python.flake8",
+        "njpwerner.autodocstring",
+        "esbenp.prettier-vscode",
+        "jgclark.vscode-todo-highlight"
+      ]
+}
