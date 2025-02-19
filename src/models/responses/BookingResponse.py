@@ -1,8 +1,26 @@
-class BookingResponse:
-    def __init__(self, **kwargs):
-        self.first_name = kwargs.get("firstname")
-        self.last_name = kwargs.get("lastname")
-        self.total_price = kwargs.get("totalprice")
-        self.deposit_paid = kwargs.get("depositpaid")
-        self.booking_dates = kwargs.get("bookingdates")
-        self.additional_needs = kwargs.get("additionalneeds")
+from pydantic import BaseModel
+from typing import Optional
+
+
+class BookingDates(BaseModel):
+    checkin: str
+    checkout: str
+
+
+class BookingDetails(BaseModel):
+    id: Optional[int] = None
+    firstname: str
+    lastname: str
+    totalprice: int
+    depositpaid: bool
+    bookingdates: BookingDates
+    additionalneeds: str
+
+
+class BookingResponse(BaseModel):
+    bookingid: int
+    booking: BookingDetails
+
+
+class BookingIdResponse(BaseModel):
+    bookingid: int

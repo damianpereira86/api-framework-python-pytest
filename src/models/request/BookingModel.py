@@ -1,11 +1,17 @@
 from pydantic import BaseModel
+from typing import Optional
+
+
+class BookingDates(BaseModel):
+    checkin: Optional[str] = None
+    checkout: Optional[str] = None
 
 
 class BookingModel(BaseModel):
-    id: int | None = None
-    firstname: str | None = None
-    lastname: str | None = None
-    totalprice: int | None = None
-    depositpaid: bool | None = None
-    bookingdates: dict | None = None
-    additionalneeds: str | None = None
+    id: Optional[int] = None
+    firstname: Optional[str] = None
+    lastname: Optional[str] = None
+    totalprice: Optional[int] = None
+    depositpaid: Optional[bool] = None
+    bookingdates: Optional[BookingDates] = None
+    additionalneeds: Optional[str] = None

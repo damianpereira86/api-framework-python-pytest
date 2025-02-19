@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 env:
-  BASEURL: ${{ vars.BASEURL }}
+  BASEURL: ${{ vars.BASE_URL }}
   USER: ${{ secrets.USER }}
   PASSWORD: ${{ secrets.PASSWORD }}
 

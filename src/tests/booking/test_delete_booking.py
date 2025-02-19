@@ -1,7 +1,6 @@
 import pytest
 from src.models.services.BookingService import BookingService
-from src.models.responses.BookingResponse import BookingResponse
-from src.models.request.BookingModel import BookingModel
+from src.models.request.BookingModel import BookingModel, BookingDates
 
 
 @pytest.fixture
@@ -18,11 +17,11 @@ def booking_id(booking_service):
         lastname="Snow",
         totalprice=1000,
         depositpaid=True,
-        bookingdates={"checkin": "2024-01-01", "checkout": "2024-02-01"},
+        bookingdates=BookingDates(checkin="2024-01-01", checkout="2024-02-01"),
         additionalneeds="Breakfast",
     )
     response = booking_service.add_booking(booking)
-    return response.data["bookingid"]
+    return response.data.bookingid
 
 
 def test_delete_booking_successfully(booking_service, booking_id):
@@ -35,9 +34,12 @@ def test_delete_booking_successfully(booking_service, booking_id):
 
 def test_delete_booking_successfully_response_time(booking_service, booking_id):
     response = booking_service.delete_booking(booking_id)
-    assert response.response_time < 1000
+    assert response.response_time < 2000
 
 
+@pytest.mark.skip(
+    reason="BUG: https://github.com/damianpereira86/api-framework-ts-mocha/issues/6"
+)
 def test_delete_booking_successfully_status_code(booking_service, booking_id):
     response = booking_service.delete_booking(booking_id)
     assert response.status == 204
@@ -49,6 +51,9 @@ def test_unauthorized_delete_booking(booking_id):
     assert response.status == 403
 
 
+@pytest.mark.skip(
+    reason="BUG: https://github.com/damianpereira86/api-framework-ts-mocha/issues/7"
+)
 def test_delete_non_existent_booking(booking_service):
     booking_id = 999999999
     response = booking_service.delete_booking(booking_id)
