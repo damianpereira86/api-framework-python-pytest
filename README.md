@@ -23,7 +23,7 @@ Before starting with the setup, ensure you have a local copy of the repository. 
 1. Clone the repository to your local machine using the following command in your terminal:
 
    ```bash
-   git clone https://github.com/damianpereira86/api-framework-ts-mocha.git
+   git clone https://github.com/damianpereira86/api-framework-python-pytest.git
 
 2. Navigate to the project directory on your terminal. This is where the `requirements.txt` file is located.
 
