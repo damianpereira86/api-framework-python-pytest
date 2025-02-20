@@ -28,7 +28,7 @@ Before starting with the setup, ensure you have a local copy of the repository. 
 2. Navigate to the project directory on your terminal. This is where the `requirements.txt` file is located.
 
     ```bash
-    cd api-framework-ts-mocha
+    cd api-framework-python-pytest
     ```
 
 3. Install the necessary dependencies by running the following command in the root folder:
@@ -50,35 +50,33 @@ The `.env` file is used to store environment variables that are important for ru
 - Open the `.env` file in your preferred text editor and update the following properties with your local environment values:
 
     ```yaml
-    BASEURL=api_base_url
+    BASE_URL=api_base_url
     USER=username
     PASSWORD=password
     ```
 
-    Make sure to replace `api_base_url`, `username`, and `password` with the actual values you wish to use for testing. The `BASEURL` should point to the base URL of the API you are testing. `USER` and `PASSWORD` are used for scenarios where authentication is required.
+    Make sure to replace `api_base_url`, `username`, and `password` with the actual values you wish to use for testing. The `BASE_URL` should point to the base URL of the API you are testing. `USER` and `PASSWORD` are used for scenarios where authentication is required.
 
 **Note:** The values provided in the `example.env` file correspond to the [Restful-booker](https://restful-booker.herokuapp.com/apidoc/index.html) API used for demonstration purposes in this framework, which is a test API. I did it to make it frictionless to run the example tests. 
 However, it is crucial to **never** commit these values or your personal environment variables to version control in a real project, as it can expose sensitive information.
     
 ### VS Code Extensions
 
-Three VS Code extensions are recommended for this project. 
+Five VS Code extensions are recommended for this project:
 
+- Python (ms-python.python): Python language support
+- Pylance (ms-python.vscode-pylance): Python language server
 - Flake8 (ms-python.flake8): Linter
 - Black (ms-python.black-formatter): Code formatter
 - TODO Highlight (jgclark.vscode-todo-highlight): Bug management
 
-They will be recommended to the user on the setup since they are set as recommendations on the extension.json file.
+They will be recommended to the user on the setup since they are set as recommendations in the extension.json file.
 
 ### Running the tests
 
 ```bash
 # Runs all tests
 pytest
-
-# Runs tests by tag
-pytest -m smoke
-pytest -m regression
 ```
 
 ### Flake8
@@ -149,15 +147,23 @@ By extending ServiceBase, BookingService gains all the functionalities of making
 In addition to **Service Models**, you should declare **Request** and **Response** models as needed. For example, here is the BookingModel that will be used to deserialize the response from the endpoint above.
 
 ```python
-class BookingModel:
-    def __init__(self, id=None, firstname=None, lastname=None, totalprice=None, depositpaid=None, bookingdates=None, additionalneeds=None):
-        self.id = id
-        self.firstname = firstname
-        self.lastname = lastname
-        self.totalprice = totalprice
-        self.depositpaid = depositpaid
-        self.bookingdates = bookingdates
-        self.additionalneeds = additionalneeds
+from pydantic import BaseModel
+from typing import Optional
+
+
+class BookingDates(BaseModel):
+    checkin: Optional[str] = None
+    checkout: Optional[str] = None
+
+
+class BookingModel(BaseModel):
+    id: Optional[int] = None
+    firstname: Optional[str] = None
+    lastname: Optional[str] = None
+    totalprice: Optional[int] = None
+    depositpaid: Optional[bool] = None
+    bookingdates: Optional[BookingDates] = None
+    additionalneeds: Optional[str] = None
 ```
 
 ## Tests
@@ -178,33 +184,26 @@ def test_get_booking_successfully(booking_service):
     assert response.status == 200
 ```
 
-Note the BookingModel on the generic get_booking function. With that in place, you can easily assert against the response body properties.
+And you can easily assert against the response body properties.
 
 ```python
-def test_get_booking_successfully(booking_service):
-    booking = booking_service.add_booking({
-        "firstname": "Damian",
-        "lastname": "Pereira",
-        "totalprice": 1000,
-        "depositpaid": True,
-        "bookingdates": {
-            "checkin": "2024-01-01",
-            "checkout": "2024-02-01"
-        },
-        "additionalneeds": "Breakfast"
-    })
-
-    booking_id = booking.data["bookingid"]
-
+def test_get_booking_successfully(booking_service, created_booking):
+    booking_id = created_booking.data.bookingid
     response = booking_service.get_booking(booking_id)
     assert response.status == 200
-    assert response.data["firstname"] == booking.data["booking"]["firstname"]
-    assert response.data["lastname"] == booking.data["booking"]["lastname"]
-    assert response.data["totalprice"] == booking.data["booking"]["totalprice"]
-    assert response.data["depositpaid"] is True
-    assert response.data["bookingdates"]["checkin"] == booking.data["booking"]["bookingdates"]["checkin"]
-    assert response.data["bookingdates"]["checkout"] == booking.data["booking"]["bookingdates"]["checkout"]
-    assert response.data["additionalneeds"] == booking.data["booking"]["additionalneeds"]
+    assert response.data.firstname == created_booking.data.booking.firstname
+    assert response.data.lastname == created_booking.data.booking.lastname
+    assert response.data.totalprice == created_booking.data.booking.totalprice
+    assert response.data.depositpaid is True
+    assert (
+        response.data.bookingdates.checkin
+        == created_booking.data.booking.bookingdates.checkin
+    )
+    assert (
+        response.data.bookingdates.checkout
+        == created_booking.data.booking.bookingdates.checkout
+    )
+    assert response.data.additionalneeds == created_booking.data.booking.additionalneeds
 ```
 
 In the example above, I am using a call to the add_booking endpoint to create the booking needed for the get_booking test, and then using the newly created booking to assert against it.
@@ -226,29 +225,14 @@ This makes adding simple but powerful performance checks to your API automation 
 
 The authentication process depends on the method required by the API, but in most cases, it involves sending tokens in the request headers.
 
-In this repository, the API uses an `/auth` endpoint to obtain a token, which is then sent in the request headers as a cookie. To streamline this process, I’ve added an `authenticate()` method in the `ServiceBase` class, making it easy to authenticate with the API.
+In this repository, the API uses an `/auth` endpoint to obtain a token, which is then sent in the request headers as a cookie. To streamline this process, I've added an `authenticate()` method in the `ServiceBase` class, making it easy to authenticate with the API.
 
 Additionally, the token is cached so that subsequent calls to `authenticate()` from any service do not result in unnecessary requests to the server.
 
-Here’s the implementation of the `authenticate()` method:
+Here's the implementation of the `authenticate()` method:
 
 ```python
-import os
-from src.models.request.CredentialsModel import CredentialsModel
-from src.models.responses.SessionResponse import SessionResponse
-from src.base.SessionManager import SessionManager
-
-class ServiceBase:
-    def __init__(self, endpoint_path):
-        self.api = ApiClient.getInstance()
-        self.url = self.base_url + endpoint_path
-        self.default_config = {}
-
-    @property
-    def base_url(self):
-        return os.getenv("BASEURL", "")
-
-    def authenticate(self):
+def authenticate(self) -> None:
         username = os.getenv("USER")
         password = os.getenv("PASSWORD")
 
@@ -259,17 +243,22 @@ class ServiceBase:
 
         if cached_token:
             self.default_config = {
-                "headers": {"Cookie": "token=" + cached_token}
+                "headers": {"Cookie": "token=" + cached_token},
             }
             return
 
-        credentials = CredentialsModel(username, password)
-        response = self.post(f"{self.base_url}/auth", credentials)
+        credentials = CredentialsModel(username=username, password=password)
 
-        SessionManager.store_token(username, password, response.data["token"])
+        response = self.api.client.post(
+            f"{self.base_url}/auth", json=credentials.model_dump()
+        )
+        raw_data = response.json()
+        auth_response = AuthResponse.model_validate(raw_data)
+
+        SessionManager.store_token(username, password, auth_response.token)
 
         self.default_config = {
-            "headers": {"Cookie": "token=" + response.data["token"]}
+            "headers": {"Cookie": "token=" + auth_response.token},
         }
 ```
 
@@ -314,7 +303,7 @@ Check the [Actions](https://github.com/damianpereira86/api-framework-python-pyte
 
 ![Pipeline](./images/cicd.png)
 
-Ensure that you configure any necessary environment variables and secrets. These can be managed in the repository’s **Settings** under **Secrets and variables**.
+Ensure that you configure any necessary environment variables and secrets. These can be managed in the repository's **Settings** under **Secrets and variables**.
 1. Repository Variables: Go to Settings > Secrets and variables > Actions > Variables. (e.g., BASEURL)
 2. Repository Secrets: Go to Settings > Secrets and variables > Actions > Secrets.(e.g., USER and PASSWORD)
 
@@ -334,11 +323,11 @@ This framework has been extended in the past with different features such as:
 - Database integration
 - And so on...
 
-But each of them depends on the project needs, the tools of choice, etc. Hence, I’ll be adding examples of possible extensions that could be useful for some of you, while leaving this repo as light and straightforward as possible.
+But each of them depends on the project needs, the tools of choice, etc. Hence, I'll be adding examples of possible extensions that could be useful for some of you, while leaving this repo as light and straightforward as possible.
 
 ## Next steps
 
-Now it’s time to use it. Go ahead and explore the test examples in this repo and adapt it to your use case. I’m sure there are much better ways to tackle some of the features of this framework, and I will be more than happy to hear them and include them in the repo. Or better, you can include them yourself!
+Now it's time to use it. Go ahead and explore the test examples in this repo and adapt it to your use case. I'm sure there are much better ways to tackle some of the features of this framework, and I will be more than happy to hear them and include them in the repo. Or better, you can include them yourself!
 
 ## Contact/Support
 
@@ -346,11 +335,11 @@ If you have any questions, encounter any issues, or simply want to provide feedb
 
 Here are a few ways you can reach out for support or assistance:
 
-- **Submit an Issue**: If you find any bugs or issues, feel free to open an issue on the [GitHub issues page](https://github.com/damianpereira86/api-framework-ts-mocha/issues). Please provide as much detail as possible to help me understand and address the problem quickly.
+- **Submit an Issue**: If you find any bugs or issues, feel free to open an issue on the [GitHub issues page](https://github.com/damianpereira86/api-framework-python-pytest/issues). Please provide as much detail as possible to help me understand and address the problem quickly.
 
-- **Discussions**: For questions, suggestions, or general discussions about the project, please use the [Discussions](https://github.com/damianpereira86/api-framework-ts-mocha/discussions) section of the GitHub repository. This is a great place to connect with other users and contributors, share ideas, and get advice.
+- **Discussions**: For questions, suggestions, or general discussions about the project, please use the [Discussions](https://github.com/damianpereira86/api-framework-python-pytest/discussions) section of the GitHub repository. This is a great place to connect with other users and contributors, share ideas, and get advice.
 
-- **Email**: If you prefer direct communication, you can email me at [damianpereira@gmail.com](mailto:damianpereira@gmail.com). I'll try to respond as promptly as possible.
+- **Email**: If you prefer direct communication, you can email me at [damianpereira86@gmail.com](mailto:damianpereira86@gmail.com). I'll try to respond as promptly as possible.
 
 ## Contribution Guidelines
 

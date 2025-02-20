@@ -1,5 +1,6 @@
 from src.base.ApiClientBase import ApiClientBase
 
+
 class ApiClient(ApiClientBase):
     _instance = None
 

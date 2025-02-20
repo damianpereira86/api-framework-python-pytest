@@ -47,7 +47,6 @@ class ServiceBase(Generic[T]):
 
         credentials = CredentialsModel(username=username, password=password)
 
-        # Create a temporary response without using self._response_model
         response = self.api.client.post(
             f"{self.base_url}/auth", json=credentials.model_dump()
         )
