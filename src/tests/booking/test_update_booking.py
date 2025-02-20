@@ -74,7 +74,7 @@ def test_unauthorized_update_booking(booking_id):
 
 
 @pytest.mark.skip(
-    reason="BUG: https://github.com/damianpereira86/api-framework-ts-mocha/issues/9"
+    reason="BUG: https://github.com/damianpereira86/api-framework-python-pytest/issues/6"
 )
 def test_update_non_existent_booking(booking_service):
     booking_id = 999999999

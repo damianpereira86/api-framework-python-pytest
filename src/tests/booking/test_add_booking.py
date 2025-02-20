@@ -45,7 +45,7 @@ def test_add_booking_successfully_response_time(booking_service):
 
 
 @pytest.mark.skip(
-    reason="BUG: https://github.com/damianpereira86/api-framework-ts-mocha/issues/4"
+    reason="BUG: https://github.com/damianpereira86/api-framework-python-pytest/issues/1"
 )
 def test_add_booking_successfully_status_code(booking_service):
     booking = BookingModel(
@@ -62,7 +62,7 @@ def test_add_booking_successfully_status_code(booking_service):
 
 
 @pytest.mark.skip(
-    reason="BUG: https://github.com/damianpereira86/api-framework-ts-mocha/issues/5"
+    reason="BUG: https://github.com/damianpereira86/api-framework-python-pytest/issues/2"
 )
 def test_add_booking_no_firstname(booking_service):
     booking = BookingModel(

@@ -38,7 +38,7 @@ def test_delete_booking_successfully_response_time(booking_service, booking_id):
 
 
 @pytest.mark.skip(
-    reason="BUG: https://github.com/damianpereira86/api-framework-ts-mocha/issues/6"
+    reason="BUG: https://github.com/damianpereira86/api-framework-python-pytest/issues/3"
 )
 def test_delete_booking_successfully_status_code(booking_service, booking_id):
     response = booking_service.delete_booking(booking_id)
@@ -52,7 +52,7 @@ def test_unauthorized_delete_booking(booking_id):
 
 
 @pytest.mark.skip(
-    reason="BUG: https://github.com/damianpereira86/api-framework-ts-mocha/issues/7"
+    reason="BUG: https://github.com/damianpereira86/api-framework-python-pytest/issues/4"
 )
 def test_delete_non_existent_booking(booking_service):
     booking_id = 999999999
