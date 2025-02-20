@@ -310,7 +310,7 @@ This repository utilizes GitHub Actions for continuous integration and delivery 
 2. **Testing**: It executes the automated tests defined in the repository.
 3. **Deployment (Optional)**: If all tests pass, the pipeline can automatically deploy your code to the production environment.
 
-Check the [Actions](https://github.com/damianpereira86/api-framework-ts-mocha/actions) tab to see passed and failed pipelines.
+Check the [Actions](https://github.com/damianpereira86/api-framework-python-pytest/actions) tab to see passed and failed pipelines.
 
 ![Pipeline](./images/cicd.png)
 
@@ -321,15 +321,6 @@ Ensure that you configure any necessary environment variables and secrets. These
 You can customize the CI/CD pipeline to suit your project's needs. For example, you can adjust which branches trigger the pipeline, add steps for deployment, or configure notifications.
 
 To get started with GitHub Actions in your project, check out the `.github/workflows` directory in this repository. Here, you'll find the workflow files that define our CI/CD processes. You can modify these files to change the pipeline or add new workflows.
-
-See branch `features/two-step-pipeline` as an example of a pipeline that does the following:
-1. Runs the Smoke tests, and fails in case any test fails, 
-2. Runs the Regression tests, that do not make the pipeline fail.
-
-### Linting in the pipeline
-As mentioned above, this job will run Flake8 before running the tests. In the following screenshot, the pipeline failed due to an flake8 error.
-
-![Flake8 error](./images/flake8-error.png)
 
 For more detailed examples and advanced features, refer to the [GitHub Actions Documentation](https://docs.github.com/en/actions).
 
