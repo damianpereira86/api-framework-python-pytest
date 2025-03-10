@@ -8,4 +8,5 @@ class ApiClient:
             {"Content-Type": "application/json", "Accept": "application/json"}
         )
 
+
 api_client_instance = ApiClient()

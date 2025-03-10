@@ -1,6 +1,6 @@
 import pytest
 
-from src.models.requests.booking import BookingModel, BookingDates
+from src.models.requests.booking.booking_model import BookingModel, BookingDates
 from src.models.services.booking_service import BookingService
 
 
@@ -18,7 +18,7 @@ def booking_id(booking_service):
         lastname="Snow",
         totalprice=1000,
         depositpaid=True,
-        bookingdates=BookingDates(checkin= "2024-01-01", checkout= "2024-02-01"),
+        bookingdates=BookingDates(checkin="2024-01-01", checkout="2024-02-01"),
         additionalneeds="Breakfast",
     )
     response = booking_service.add_booking(booking)
@@ -31,7 +31,7 @@ def test_update_booking_successfully(booking_service, booking_id):
         lastname="Brown",
         totalprice=111,
         depositpaid=False,
-        bookingdates=BookingDates(checkin= "2020-01-01", checkout= "2021-01-01"),
+        bookingdates=BookingDates(checkin="2020-01-01", checkout="2021-01-01"),
         additionalneeds="Lunch",
     )
 
@@ -52,7 +52,7 @@ def test_update_booking_successfully_response_time(booking_service, booking_id):
         lastname="Brown",
         totalprice=111,
         depositpaid=False,
-        bookingdates=BookingDates(checkin= "2020-01-01", checkout= "2021-01-01"),
+        bookingdates=BookingDates(checkin="2020-01-01", checkout="2021-01-01"),
         additionalneeds="Lunch",
     )
 
@@ -67,7 +67,7 @@ def test_unauthorized_update_booking(booking_id):
         lastname="Winter",
         totalprice=500,
         depositpaid=True,
-        bookingdates=BookingDates(checkin= "2024-01-01", checkout= "2024-02-01"),
+        bookingdates=BookingDates(checkin="2024-01-01", checkout="2024-02-01"),
         additionalneeds="Lunch",
     )
     response = unauthorized_booking_service.update_booking(booking_id, booking)
@@ -84,7 +84,7 @@ def test_update_non_existent_booking(booking_service):
         lastname="Winter",
         totalprice=500,
         depositpaid=True,
-        bookingdates=BookingDates(checkin= "2024-01-01", checkout= "2024-02-01"),
+        bookingdates=BookingDates(checkin="2024-01-01", checkout="2024-02-01"),
         additionalneeds="Lunch",
     )
     response = booking_service.update_booking(booking_id, booking)

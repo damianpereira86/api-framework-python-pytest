@@ -1,6 +1,6 @@
 import pytest
 
-from src.models.requests.booking import BookingDates, BookingModel
+from src.models.requests.booking.booking_model import BookingDates, BookingModel
 from src.models.services.booking_service import BookingService
 
 

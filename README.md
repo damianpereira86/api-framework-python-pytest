@@ -51,7 +51,7 @@ The `.env` file is used to store environment variables that are important for ru
 
     ```yaml
     BASE_URL=api_base_url
-    USER=username
+    USERNAME=username
     PASSWORD=password
     ```
 

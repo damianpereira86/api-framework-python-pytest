@@ -1,9 +1,11 @@
 from typing import List
 
 from src.base.service_base import ServiceBase
-from src.models.requests.booking import BookingModel
+from src.models.requests.booking.booking_model import BookingModel
 from src.models.responses.base.response import Response
-from src.models.responses.booking.booking_response import BookingIdResponse, BookingDetails, BookingResponse
+from src.models.responses.booking.booking_response import (
+    BookingIdResponse, BookingDetails, BookingResponse
+)
 from src.models.shared.http_methods import Method
 
 

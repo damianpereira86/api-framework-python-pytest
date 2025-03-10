@@ -12,7 +12,7 @@ class AuthMethod(Enum):
 
 class Authenticator:
     """
-    Provides various authentication methods using pattern matching to select the appropriate approach.
+    Provides authentication methods to select the appropriate approach.
     """
 
     @staticmethod

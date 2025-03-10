@@ -41,7 +41,7 @@ class ServiceBase:
             credentials: Dict[str, Any] = None
     ) -> None:
         """
-        Uses the specified authentication method to generate a configuration with the proper HTTP headers.
+        Uses the specified authentication method to generate the auth headers.
 
         Args:
             auth_method (AuthMethod): The authentication method to use.
@@ -72,7 +72,7 @@ class ServiceBase:
 
         raw_data = response.json()
         auth_response = AuthResponse.model_validate(raw_data)
-        SessionManager.store_token(credentials["username"], credentials["password"], auth_response.token)
+        SessionManager.store_token(username, password, auth_response.token)
         self.default_config = {"headers": {"Cookie": f"token={auth_response.token}"}}
 
     def request(
@@ -86,7 +86,8 @@ class ServiceBase:
         config = config or self.default_config
         start_time = int(time() * 1000)
 
-        json_payload = data.model_dump(exclude_none=True) if data and hasattr(data, "model_dump") else None
+        has_model_dump = data and hasattr(data, "model_dump")
+        json_payload = data.model_dump(exclude_none=True) if has_model_dump else None
 
         response = getattr(self.api.client, method.value)(url, json=json_payload, **config)
         end_time = int(time() * 1000)
