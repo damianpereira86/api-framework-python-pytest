@@ -1,6 +1,7 @@
 import pytest
-from src.models.services.BookingService import BookingService
-from src.models.request.BookingModel import BookingModel, BookingDates
+
+from src.models.requests.booking import BookingModel, BookingDates
+from src.models.services.booking_service import BookingService
 
 
 @pytest.fixture
@@ -36,7 +37,7 @@ def test_add_booking_successfully_response_time(booking_service):
         lastname="Brown",
         totalprice=111,
         depositpaid=True,
-        bookingdates={"checkin": "2020-01-01", "checkout": "2021-01-01"},
+        bookingdates=BookingDates(checkin="2020-01-01", checkout="2021-01-01"),
         additionalneeds="Breakfast",
     )
 
@@ -53,7 +54,7 @@ def test_add_booking_successfully_status_code(booking_service):
         lastname="Brown",
         totalprice=111,
         depositpaid=True,
-        bookingdates={"checkin": "2020-01-01", "checkout": "2021-01-01"},
+        bookingdates=BookingDates(checkin="2020-01-01", checkout="2021-01-01"),
         additionalneeds="Breakfast",
     )
 
