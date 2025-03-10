@@ -32,12 +32,12 @@ def test_get_booking_successfully(booking_service, created_booking):
     assert response.data.totalprice == created_booking.data.booking.totalprice
     assert response.data.depositpaid is True
     assert (
-            response.data.bookingdates.checkin
-            == created_booking.data.booking.bookingdates.checkin
+        response.data.bookingdates.checkin
+        == created_booking.data.booking.bookingdates.checkin
     )
     assert (
-            response.data.bookingdates.checkout
-            == created_booking.data.booking.bookingdates.checkout
+        response.data.bookingdates.checkout
+        == created_booking.data.booking.bookingdates.checkout
     )
     assert response.data.additionalneeds == created_booking.data.booking.additionalneeds
 

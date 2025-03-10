@@ -45,7 +45,7 @@ class Authenticator:
 
     @staticmethod
     def authenticate_username_password(
-            username: Optional[str], password: Optional[str]
+        username: Optional[str], password: Optional[str]
     ) -> Dict[str, Any]:
         credentials_bytes = f"{username}:{password}".encode("utf-8")
         encoded = base64.b64encode(credentials_bytes).decode("utf-8")

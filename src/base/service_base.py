@@ -36,9 +36,9 @@ class ServiceBase:
         self.default_config: Dict[str, Any] = {}
 
     def authenticate(
-            self,
-            auth_method: AuthMethod = AuthMethod.USERNAME_PASSWORD,
-            credentials: Dict[str, Any] = None
+        self,
+        auth_method: AuthMethod = AuthMethod.USERNAME_PASSWORD,
+        credentials: Dict[str, Any] = None,
     ) -> None:
         """
         Uses the specified authentication method to generate the auth headers.
@@ -52,7 +52,10 @@ class ServiceBase:
                 For USERNAME_PASSWORD: expects {"username": str, "password": str}.
         """
         if not credentials:
-            credentials = {"username": os.getenv("USERNAME"), "password": os.getenv("PASSWORD")}
+            credentials = {
+                "username": os.getenv("USERNAME"),
+                "password": os.getenv("PASSWORD"),
+            }
 
         auth_config = Authenticator.authenticate(auth_method, credentials)
 
@@ -68,7 +71,9 @@ class ServiceBase:
             return
 
         credentials_req = CredentialsModel(username=username, password=password)
-        response = self.api.client.post(f"{self.base_url}/auth", json=credentials_req.__dict__)
+        response = self.api.client.post(
+            f"{self.base_url}/auth", json=credentials_req.__dict__
+        )
 
         raw_data = response.json()
         auth_response = AuthResponse.model_validate(raw_data)
@@ -76,12 +81,12 @@ class ServiceBase:
         self.default_config = {"headers": {"Cookie": f"token={auth_response.token}"}}
 
     def request(
-            self,
-            method: Method,
-            url: str,
-            data: Optional[Any] = None,
-            config: Optional[Dict[str, Any]] = None,
-            response_model: Type[T] = None,
+        self,
+        method: Method,
+        url: str,
+        data: Optional[Any] = None,
+        config: Optional[Dict[str, Any]] = None,
+        response_model: Type[T] = None,
     ) -> Response[T]:
         config = config or self.default_config
         start_time = int(time() * 1000)
@@ -89,7 +94,9 @@ class ServiceBase:
         has_model_dump = data and hasattr(data, "model_dump")
         json_payload = data.model_dump(exclude_none=True) if has_model_dump else None
 
-        response = getattr(self.api.client, method.value)(url, json=json_payload, **config)
+        response = getattr(self.api.client, method.value)(
+            url, json=json_payload, **config
+        )
         end_time = int(time() * 1000)
 
         try:
