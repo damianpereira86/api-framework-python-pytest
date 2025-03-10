@@ -1,5 +1,5 @@
 import os
-import time
+from time import time
 from typing import Any, Dict, Optional, Type, TypeVar, List, get_args
 import requests
 from dotenv import load_dotenv
@@ -13,7 +13,7 @@ from src.models.responses.auth.auth_response import AuthResponse
 from src.models.responses.base.response import Response
 from src.models.shared.http_methods import Method
 
-T = TypeVar("T", bound=BaseModel|List[BaseModel])
+T = TypeVar("T", bound=BaseModel | List[BaseModel])
 
 
 class ServiceBase:
@@ -27,7 +27,7 @@ class ServiceBase:
     """
 
     def __init__(self, path: str = "", base_url: str = "") -> None:
-        load_dotenv()
+        load_dotenv(override=True)
         self.base_url = base_url or os.getenv("BASE_URL")
         if not self.base_url:
             raise ValueError("A valid base_url must be provided.")
@@ -35,7 +35,11 @@ class ServiceBase:
         self.api = api_client_instance
         self.default_config: Dict[str, Any] = {}
 
-    def authenticate(self, auth_method: AuthMethod, credentials: Dict[str, Any]) -> None:
+    def authenticate(
+            self,
+            auth_method: AuthMethod = AuthMethod.USERNAME_PASSWORD,
+            credentials: Dict[str, Any] = None
+    ) -> None:
         """
         Uses the specified authentication method to generate a configuration with the proper HTTP headers.
 
@@ -47,6 +51,9 @@ class ServiceBase:
                 For COOKIE: expects {"cookie": str}.
                 For USERNAME_PASSWORD: expects {"username": str, "password": str}.
         """
+        if not credentials:
+            credentials = {"username": os.getenv("USERNAME"), "password": os.getenv("PASSWORD")}
+
         auth_config = Authenticator.authenticate(auth_method, credentials)
 
         if auth_method != AuthMethod.USERNAME_PASSWORD:
@@ -60,8 +67,9 @@ class ServiceBase:
             self.default_config = {"headers": {"Cookie": f"token={cached_token}"}}
             return
 
-        credentials_req = CredentialsModel(username=credentials["username"], password=credentials["password"])
+        credentials_req = CredentialsModel(username=username, password=password)
         response = self.api.client.post(f"{self.base_url}/auth", json=credentials_req.__dict__)
+
         raw_data = response.json()
         auth_response = AuthResponse.model_validate(raw_data)
         SessionManager.store_token(credentials["username"], credentials["password"], auth_response.token)
@@ -76,16 +84,16 @@ class ServiceBase:
             response_model: Type[T] = None,
     ) -> Response[T]:
         config = config or self.default_config
-        start_time = time.time_ns()
+        start_time = int(time() * 1000)
 
         json_payload = data.model_dump(exclude_none=True) if data and hasattr(data, "model_dump") else None
 
         response = getattr(self.api.client, method.value)(url, json=json_payload, **config)
-        end_time = time.time_ns()
+        end_time = int(time() * 1000)
 
         try:
             raw_data = response.json()
-            if type(response_model) == list:
+            if response_model and isinstance(raw_data, list):
                 model = get_args(response_model)[0]
                 parsed_data = [model.model_validate(item) for item in raw_data]
             elif response_model:

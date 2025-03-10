@@ -1,9 +1,7 @@
 import pytest
-from src.models.services.BookingService import BookingService
-from src.models.responses.BookingResponse import (
-    BookingDetails,
-    BookingDates,
-)
+
+from src.models.requests.booking import BookingDates, BookingModel
+from src.models.services.booking_service import BookingService
 
 
 @pytest.fixture
@@ -26,7 +24,7 @@ def test_get_all_booking_ids_response_time(booking_service):
 
 def test_get_booking_ids_with_query_parameters_firstname(booking_service):
     random_firstname = "Damian" + str(hash("Damian"))
-    booking = BookingDetails(
+    booking = BookingModel(
         firstname=random_firstname,
         lastname="Pereira",
         totalprice=1000,

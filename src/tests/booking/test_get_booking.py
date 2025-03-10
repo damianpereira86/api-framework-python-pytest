@@ -1,6 +1,7 @@
 import pytest
-from src.models.services.BookingService import BookingService
-from src.models.request.BookingModel import BookingModel
+
+from src.models.requests.booking import BookingModel, BookingDates
+from src.models.services.booking_service import BookingService
 
 
 @pytest.fixture
@@ -15,7 +16,7 @@ def created_booking(booking_service):
         lastname="Pereira",
         totalprice=1000,
         depositpaid=True,
-        bookingdates={"checkin": "2024-01-01", "checkout": "2024-02-01"},
+        bookingdates=BookingDates(checkin="2024-01-01", checkout="2024-02-01"),
         additionalneeds="Breakfast",
     )
     response = booking_service.add_booking(booking)
@@ -31,12 +32,12 @@ def test_get_booking_successfully(booking_service, created_booking):
     assert response.data.totalprice == created_booking.data.booking.totalprice
     assert response.data.depositpaid is True
     assert (
-        response.data.bookingdates.checkin
-        == created_booking.data.booking.bookingdates.checkin
+            response.data.bookingdates.checkin
+            == created_booking.data.booking.bookingdates.checkin
     )
     assert (
-        response.data.bookingdates.checkout
-        == created_booking.data.booking.bookingdates.checkout
+            response.data.bookingdates.checkout
+            == created_booking.data.booking.bookingdates.checkout
     )
     assert response.data.additionalneeds == created_booking.data.booking.additionalneeds
 
