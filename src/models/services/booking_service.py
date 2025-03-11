@@ -8,12 +8,11 @@ from src.models.responses.booking.booking_response import (
     BookingDetails,
     BookingResponse,
 )
-from src.models.shared.http_methods import Method
 
 
 class BookingService(ServiceBase):
-    def __init__(self):
-        super().__init__("/booking")
+    def __init__(self, store_name: str = None):
+        super().__init__("/booking", store_name=store_name)
 
     def get_booking_ids(
         self, params: dict = None, config: dict = None
@@ -21,16 +20,13 @@ class BookingService(ServiceBase):
         config = config or self.default_config
         if params:
             config["params"] = params
-        return self.request(
-            Method.Get, self.url, config=config, response_model=List[BookingIdResponse]
-        )
+        return self.get(self.url, config=config, response_model=List[BookingIdResponse])
 
     def get_booking(
         self, booking_id: int, config: dict | None = None
     ) -> Response[BookingDetails]:
         config = config or self.default_config
-        return self.request(
-            Method.Get,
+        return self.get(
             f"{self.url}/{booking_id}",
             config=config,
             response_model=BookingDetails,
@@ -40,8 +36,7 @@ class BookingService(ServiceBase):
         self, booking: BookingModel, config: dict | None = None
     ) -> Response[BookingResponse]:
         config = config or self.default_config
-        return self.request(
-            Method.Post,
+        return self.post(
             self.url,
             booking,
             config=config,
@@ -52,24 +47,29 @@ class BookingService(ServiceBase):
         self, booking_id: int, booking: BookingModel, config: dict | None = None
     ) -> Response[BookingDetails]:
         config = config or self.default_config
-        return self.request(
-            Method.Put, f"{self.url}/{booking_id}", booking, config, BookingDetails
+        return self.put(
+            f"{self.url}/{booking_id}",
+            booking,
+            config=config,
+            response_model=BookingDetails,
         )
 
     def partial_update_booking(
         self, booking_id: int, booking: BookingModel, config: dict | None = None
     ) -> Response[BookingDetails]:
         config = config or self.default_config
-        return self.request(
-            Method.Patch, f"{self.url}/{booking_id}", booking, config, BookingDetails
+        return self.patch(
+            f"{self.url}/{booking_id}",
+            booking,
+            config=config,
+            response_model=BookingDetails,
         )
 
     def delete_booking(
         self, booking_id: int, config: dict | None = None
     ) -> Response[BookingDetails]:
         config = config or self.default_config
-        return self.request(
-            Method.Delete,
+        return self.delete(
             f"{self.url}/{booking_id}",
             config=config,
             response_model=BookingDetails,

@@ -130,26 +130,26 @@ When you create a Service Model, you extend `ServiceBase` and define methods spe
 Here's a simple example of a service model:
 
 ```python
+from typing import List
+
 from src.base.service_base import ServiceBase
 from src.models.responses.base.response import Response
-from src.models.responses.booking.booking_response import BookingDetails
-from src.models.shared.http_methods import Method
+from src.models.responses.booking.booking_response import (
+    BookingIdResponse
+)
 
 
 class BookingService(ServiceBase):
     def __init__(self):
         super().__init__("/booking")
 
-    def get_booking(
-        self, booking_id: int, config: dict | None = None
-    ) -> Response[BookingDetails]:
+    def get_booking_ids(
+        self, params: dict = None, config: dict = None
+    ) -> Response[List[BookingIdResponse]]:
         config = config or self.default_config
-        return self.request(
-            Method.Get,
-            f"{self.url}/{booking_id}",
-            config=config,
-            response_model=BookingDetails,
-        )
+        if params:
+            config["params"] = params
+        return self.get(self.url, config=config, response_model=List[BookingIdResponse])
 ```
 
 By extending ServiceBase, BookingService gains all the functionalities of making HTTP requests, handling authentication, and standardizing responses, allowing you to focus on the logic specific to the Booking service.
@@ -276,18 +276,18 @@ Here's the implementation of the `authenticate()` method:
         password = credentials.get("password")
         cached_token = SessionManager.get_cached_token(username, password)
         if cached_token:
-            self.default_config = {"headers": {"Cookie": f"token={cached_token}"}}
+            self.store.headers["Cookie"] = f"token={cached_token}"
+            self.headers.update(self.store.headers)
             return
 
         credentials_req = CredentialsModel(username=username, password=password)
-        response = self.api.client.post(
-            f"{self.base_url}/auth", json=credentials_req.__dict__
-        )
+        response = self.post(f"{self.base_url}/auth", json=credentials_req.__dict__)
 
         raw_data = response.json()
         auth_response = AuthResponse.model_validate(raw_data)
         SessionManager.store_token(username, password, auth_response.token)
-        self.default_config = {"headers": {"Cookie": f"token={auth_response.token}"}}
+        self.store.headers["Cookie"] = f"token={auth_response.token}"
+        self.headers.update(self.store.headers)
 ```
 
 Then you can use it on the services that require authentication, like in the before hook below.
