@@ -51,7 +51,7 @@ The `.env` file is used to store environment variables that are important for ru
 
     ```yaml
     BASE_URL=api_base_url
-    USER=username
+    USERNAME=username
     PASSWORD=password
     ```
 
@@ -130,14 +130,26 @@ When you create a Service Model, you extend `ServiceBase` and define methods spe
 Here's a simple example of a service model:
 
 ```python
-from src.base.ServiceBase import ServiceBase
+from typing import List
+
+from src.base.service_base import ServiceBase
+from src.models.responses.base.response import Response
+from src.models.responses.booking.booking_response import (
+    BookingIdResponse
+)
+
 
 class BookingService(ServiceBase):
     def __init__(self):
         super().__init__("/booking")
 
-    def get_booking(self, id, config=None):
-        return self.get(f"{self.url}/{id}", config)
+    def get_booking_ids(
+        self, params: dict = None, config: dict = None
+    ) -> Response[List[BookingIdResponse]]:
+        config = config or self.default_config
+        if params:
+            config["params"] = params
+        return self.get(self.url, config=config, response_model=List[BookingIdResponse])
 ```
 
 By extending ServiceBase, BookingService gains all the functionalities of making HTTP requests, handling authentication, and standardizing responses, allowing you to focus on the logic specific to the Booking service.
@@ -172,7 +184,7 @@ Next, you can create a simple test like this.
 
 ```python
 import pytest
-from src.models.services.BookingService import BookingService
+from src.models.services.booking_service import BookingService
 
 @pytest.fixture
 def booking_service():
@@ -232,41 +244,57 @@ Additionally, the token is cached so that subsequent calls to `authenticate()` f
 Here's the implementation of the `authenticate()` method:
 
 ```python
-def authenticate(self) -> None:
-        username = os.getenv("USER")
-        password = os.getenv("PASSWORD")
+    def authenticate(
+        self,
+        auth_method: AuthMethod = AuthMethod.USERNAME_PASSWORD,
+        credentials: Dict[str, Any] = None,
+    ) -> None:
+        """
+        Uses the specified authentication method to generate the auth headers.
 
-        if not username or not password:
-            raise ValueError("Missing username or password in environment variables.")
-
-        cached_token = SessionManager.get_cached_token(username, password)
-
-        if cached_token:
-            self.default_config = {
-                "headers": {"Cookie": "token=" + cached_token},
+        Args:
+            auth_method (AuthMethod): The authentication method to use.
+            credentials (Dict[str, Any]): A dictionary of credentials.
+                For BEARER: expects {"token": str}.
+                For BASE64: expects {"encoded": str}.
+                For COOKIE: expects {"cookie": str}.
+                For USERNAME_PASSWORD: expects {"username": str, "password": str}.
+        """
+        if not credentials:
+            credentials = {
+                "username": os.getenv("USERNAME"),
+                "password": os.getenv("PASSWORD"),
             }
+
+        auth_config = Authenticator.authenticate(auth_method, credentials)
+
+        if auth_method != AuthMethod.USERNAME_PASSWORD:
+            self.default_config = auth_config
             return
 
-        credentials = CredentialsModel(username=username, password=password)
+        username = credentials.get("username")
+        password = credentials.get("password")
+        cached_token = SessionManager.get_cached_token(username, password)
+        if cached_token:
+            self.store.headers["Cookie"] = f"token={cached_token}"
+            self.headers.update(self.store.headers)
+            return
 
-        response = self.api.client.post(
-            f"{self.base_url}/auth", json=credentials.model_dump()
-        )
+        credentials_req = CredentialsModel(username=username, password=password)
+        response = self.post(f"{self.base_url}/auth", json=credentials_req.__dict__)
+
         raw_data = response.json()
         auth_response = AuthResponse.model_validate(raw_data)
-
         SessionManager.store_token(username, password, auth_response.token)
-
-        self.default_config = {
-            "headers": {"Cookie": "token=" + auth_response.token},
-        }
+        self.store.headers["Cookie"] = f"token={auth_response.token}"
+        self.headers.update(self.store.headers)
 ```
 
 Then you can use it on the services that require authentication, like in the before hook below.
 
 ```python
 import pytest
-from src.models.services.BookingService import BookingService
+from src.models.services.booking_service import BookingService
 
 @pytest.fixture
 def booking_service():
@@ -275,6 +303,7 @@ def booking_service():
     return service
 
 def test_delete_booking_successfully(booking_service):
+    booking_id = 123456
     response = booking_service.delete_booking(booking_id)
     assert response.status == 204
 ```

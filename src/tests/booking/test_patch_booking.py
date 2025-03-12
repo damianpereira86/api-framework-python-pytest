@@ -1,6 +1,7 @@
 import pytest
-from src.models.services.BookingService import BookingService
-from src.models.request.BookingModel import BookingModel, BookingDates
+
+from src.models.requests.booking.booking_model import BookingModel, BookingDates
+from src.models.services.booking_service import BookingService
 
 
 @pytest.fixture

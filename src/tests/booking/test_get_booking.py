@@ -1,6 +1,7 @@
 import pytest
-from src.models.services.BookingService import BookingService
-from src.models.request.BookingModel import BookingModel
+
+from src.models.requests.booking.booking_model import BookingModel, BookingDates
+from src.models.services.booking_service import BookingService
 
 
 @pytest.fixture
@@ -15,7 +16,7 @@ def created_booking(booking_service):
         lastname="Pereira",
         totalprice=1000,
         depositpaid=True,
-        bookingdates={"checkin": "2024-01-01", "checkout": "2024-02-01"},
+        bookingdates=BookingDates(checkin="2024-01-01", checkout="2024-02-01"),
         additionalneeds="Breakfast",
     )
     response = booking_service.add_booking(booking)

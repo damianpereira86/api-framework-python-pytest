@@ -6,7 +6,7 @@ class SessionManager:
     token_expiry_duration = 15 * 60 * 1000  # 15 minutes
 
     @staticmethod
-    def get_cached_token(username: str, password: str) -> str:
+    def get_cached_token(username: str, password: str) -> str | None:
         cache_key = f"{username}:{password}"
         cached_data = SessionManager.auth_token_cache.get(cache_key)
 
